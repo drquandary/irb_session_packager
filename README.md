@@ -317,3 +317,15 @@ black . && isort . && flake8 app tests && mypy app
 # 5) Conventional Commits
 # e.g., feat: add BIDS ZIP export
 ```
+
+## API Quick Reference
+
+- GET `/api/health`: Service health.
+- GET `/api/modalities`: Available modalities, types, risk levels, populations.
+- POST `/api/create-package`: Create session package from metadata.
+- POST `/api/export-package`: Export package in selected formats.
+- GET `/api/download-package/{session_id}`: Download exported package.
+- GET `/api/package-summary/{session_id}`: Summary for a saved package.
+- POST `/api/validate-package`: Validate package before creation.
+- GET `/api/packages`: List saved packages.
+- DELETE `/api/package/{session_id}`: Delete a package.
