@@ -3,3 +3,10 @@ uvicorn
 pandas
 pydantic
 pytest
+jinja2
+reportlab
+python-docx
+pyyaml
+jsonschema
+python-multipart
+aiofiles
