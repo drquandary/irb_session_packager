@@ -1,0 +1,18 @@
+{
+  "Name": "Study Name",
+  "BIDSVersion": "1.6.0",
+  "Authors": [
+    "Principal Investigator"
+  ],
+  "Acknowledgements": "",
+  "HowToAcknowledge": "",
+  "Funding": [],
+  "ReferencesAndLinks": [],
+  "DatasetDOI": "",
+  "License": "CC0",
+  "DatasetType": "raw",
+  "EthicsApprovals": [
+    "IRB approved"
+  ],
+  "DatasetDescription": "BIDS-compliant neuroimaging dataset"
+}

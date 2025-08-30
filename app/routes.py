@@ -8,14 +8,20 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 from .models import (
     SessionMetadata, PackageRequest, SessionPackage, 
-    ImagingModality, SessionType, RiskLevel, ParticipantPopulation, BIDSEvent
+    ImagingModality, SessionType, RiskLevel, ParticipantPopulation, BIDSEvent,
+    DynamicConsent, ConsentType, ConsentStatus, RiskAssessment, RiskCategory,
+    ComplianceCheck, RecruitmentPlan, ParticipantCommunication
 )
 from .packager import SessionPackager
+from .consent_manager import ConsentManager
+from .audit_manager import AuditManager
 
 router = APIRouter()
 
-# Initialize the session packager
+# Initialize the session packager, consent manager, and audit manager
 packager = SessionPackager()
+consent_manager = ConsentManager()
+audit_manager = AuditManager()
 
 
 class SessionCreateRequest(BaseModel):
@@ -40,6 +46,32 @@ class ExportRequest(BaseModel):
     session_id: str
     formats: List[str] = ["json", "pdf", "docx", "bids", "zip"]
     output_dir: Optional[str] = None
+
+
+class ConsentRequest(BaseModel):
+    """Request model for consent management."""
+    participant_id: str
+    consent_permissions: Dict[ConsentType, ConsentStatus]
+    language_preference: str = "en"
+    notes: Optional[str] = None
+
+
+class RiskCalculationRequest(BaseModel):
+    """Request model for risk calculation."""
+    session_metadata: SessionMetadata
+    risk_assessments: List[RiskAssessment]
+
+
+class ComplianceCheckRequest(BaseModel):
+    """Request model for compliance checking."""
+    session_metadata: SessionMetadata
+    document_content: str
+
+
+class RecruitmentPlanRequest(BaseModel):
+    """Request model for recruitment planning."""
+    session_metadata: SessionMetadata
+    target_demographics: Dict[str, Any]
 
 
 @router.get('/health')
@@ -245,5 +277,290 @@ async def delete_package(session_id: str):
 
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Enhanced IRB features
+
+@router.post('/consent/create')
+async def create_consent(request: ConsentRequest):
+    """Create or update dynamic consent for a participant."""
+    try:
+        consent = DynamicConsent(
+            participant_id=request.participant_id,
+            consent_permissions=request.consent_permissions,
+            language_preference=request.language_preference,
+            notes=request.notes
+        )
+        
+        success = consent_manager.create_consent(consent)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to create consent")
+        
+        return {"message": "Consent created successfully", "participant_id": request.participant_id}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/consent/{participant_id}')
+async def get_consent(participant_id: str):
+    """Get consent information for a participant."""
+    try:
+        consent = consent_manager.get_consent(participant_id)
+        if not consent:
+            raise HTTPException(status_code=404, detail="Consent not found")
+        
+        return consent
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put('/consent/{participant_id}/update')
+async def update_consent_status(participant_id: str, consent_type: ConsentType, new_status: ConsentStatus):
+    """Update specific consent permission status."""
+    try:
+        success = consent_manager.update_consent_status(participant_id, consent_type, new_status)
+        if not success:
+            raise HTTPException(status_code=404, detail="Consent not found or update failed")
+        
+        return {"message": f"Consent status updated for {consent_type.value}"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post('/consent/{participant_id}/withdraw')
+async def withdraw_consent(participant_id: str, reason: Optional[str] = None):
+    """Withdraw all consent permissions for a participant."""
+    try:
+        success = consent_manager.withdraw_all_consent(participant_id, reason)
+        if not success:
+            raise HTTPException(status_code=404, detail="Consent not found or withdrawal failed")
+        
+        return {"message": "All consent permissions withdrawn"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post('/consent/{participant_id}/check-validity')
+async def check_consent_validity(participant_id: str, request: SessionCreateRequest):
+    """Check if participant consent is valid for a session."""
+    try:
+        validity = consent_manager.check_consent_validity(participant_id, request.session_metadata)
+        return validity
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/consent/report')
+async def get_consent_report():
+    """Generate consent status report."""
+    try:
+        report = consent_manager.generate_consent_report()
+        return report
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post('/risk/calculate')
+async def calculate_risk_score(request: RiskCalculationRequest):
+    """Calculate comprehensive risk score for a session."""
+    try:
+        risk_score = packager.irb_generator.calculate_risk_score(
+            request.session_metadata, 
+            request.risk_assessments
+        )
+        return risk_score
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post('/compliance/check')
+async def check_compliance(request: ComplianceCheckRequest):
+    """Perform automated compliance checking on IRB documents."""
+    try:
+        compliance_checks = packager.irb_generator.check_compliance(
+            request.session_metadata,
+            request.document_content
+        )
+        
+        return {
+            "compliance_checks": compliance_checks,
+            "overall_status": "compliant" if all(
+                check.status == ComplianceStatus.COMPLIANT for check in compliance_checks
+            ) else "needs_review"
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post('/recruitment/plan')
+async def generate_recruitment_plan(request: RecruitmentPlanRequest):
+    """Generate equity-focused recruitment plan."""
+    try:
+        recruitment_plan = packager.irb_generator.generate_recruitment_plan(
+            request.session_metadata,
+            request.target_demographics
+        )
+        
+        return recruitment_plan
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/audit/trail/{session_id}')
+async def get_audit_trail(session_id: str):
+    """Get complete audit trail for a session."""
+    try:
+        audit_trail = audit_manager.get_audit_trail(session_id)
+        return {"session_id": session_id, "audit_entries": audit_trail}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/audit/document-versions/{session_id}/{document_type}')
+async def get_document_versions(session_id: str, document_type: str):
+    """Get all versions of a specific document."""
+    try:
+        versions = audit_manager.get_document_versions(session_id, document_type)
+        return {
+            "session_id": session_id,
+            "document_type": document_type,
+            "versions": versions
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/audit/report')
+async def generate_audit_report(session_id: Optional[str] = None):
+    """Generate comprehensive audit report."""
+    try:
+        report = audit_manager.generate_audit_report(session_id=session_id)
+        return report
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post('/communication/log')
+async def log_participant_communication(communication: ParticipantCommunication):
+    """Log participant communication for compliance tracking."""
+    try:
+        success = consent_manager.log_communication(communication)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to log communication")
+        
+        return {"message": "Communication logged successfully"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/communication/history/{participant_id}')
+async def get_communication_history(participant_id: str):
+    """Get communication history for a participant."""
+    try:
+        history = consent_manager.get_communication_history(participant_id)
+        return {"participant_id": participant_id, "communications": history}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/integrations/apis')
+async def get_integration_apis():
+    """Get available integration APIs and their status."""
+    # Placeholder for integration APIs like ezBIDS, OpenNeuro, etc.
+    return {
+        "available_integrations": [
+            {
+                "name": "ezBIDS",
+                "description": "BIDS validation and organization",
+                "status": "placeholder",
+                "endpoint": "/integrations/ezbids"
+            },
+            {
+                "name": "OpenNeuro",
+                "description": "Open neuroscience data repository",
+                "status": "placeholder", 
+                "endpoint": "/integrations/openneuro"
+            },
+            {
+                "name": "brainlife.io",
+                "description": "Cloud platform for neuroscience",
+                "status": "placeholder",
+                "endpoint": "/integrations/brainlife"
+            },
+            {
+                "name": "InformGen",
+                "description": "AI-assisted informed consent generation",
+                "status": "placeholder",
+                "endpoint": "/integrations/informgen"
+            }
+        ]
+    }
+
+
+@router.post('/ai/mock-review')
+async def ai_mock_review(request: SessionCreateRequest):
+    """AI mock reviewer for IRB submissions (placeholder)."""
+    try:
+        # Placeholder for AI mock reviewer functionality
+        session_package = packager.create_session_package(
+            PackageRequest(
+                session_metadata=request.session_metadata,
+                include_sop=request.include_sop,
+                include_irb=request.include_irb,
+                include_bids=request.include_bids,
+                custom_events=request.custom_events,
+                additional_metadata=request.additional_metadata
+            ),
+            save_to_storage=False
+        )
+        
+        # Mock AI review comments
+        mock_comments = [
+            {
+                "section": "informed_consent",
+                "comment": "Consider adding more specific information about data retention period",
+                "severity": "minor",
+                "suggestion": "Specify exact number of years data will be retained"
+            },
+            {
+                "section": "risk_assessment", 
+                "comment": "Risk assessment appears comprehensive for the proposed methodology",
+                "severity": "none",
+                "suggestion": None
+            },
+            {
+                "section": "recruitment",
+                "comment": "Recruitment plan meets diversity requirements",
+                "severity": "none", 
+                "suggestion": None
+            }
+        ]
+        
+        return {
+            "session_id": request.session_metadata.session_id,
+            "ai_review_comments": mock_comments,
+            "overall_assessment": "Ready for IRB submission with minor revisions",
+            "estimated_approval_likelihood": 0.85,
+            "generated_at": datetime.now()
+        }
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

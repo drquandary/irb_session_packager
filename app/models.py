@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, validator
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 from datetime import datetime
 from enum import Enum
 
@@ -38,6 +38,40 @@ class ParticipantPopulation(str, Enum):
     CHILDREN = "children"
     ELDERLY = "elderly"
     PREGNANT = "pregnant"
+
+
+class ConsentStatus(str, Enum):
+    """Dynamic consent status options."""
+    ACTIVE = "active"
+    WITHDRAWN = "withdrawn"
+    PENDING = "pending"
+    EXPIRED = "expired"
+
+
+class ConsentType(str, Enum):
+    """Types of consent permissions."""
+    DATA_SHARING = "data_sharing"
+    RECONTACT = "recontact"
+    FUTURE_RESEARCH = "future_research"
+    GENETIC_ANALYSIS = "genetic_analysis"
+    COMMERCIAL_USE = "commercial_use"
+
+
+class ComplianceStatus(str, Enum):
+    """Compliance checking status."""
+    COMPLIANT = "compliant"
+    NON_COMPLIANT = "non_compliant"
+    NEEDS_REVIEW = "needs_review"
+    PENDING = "pending"
+
+
+class RiskCategory(str, Enum):
+    """Risk assessment categories."""
+    PHYSICAL = "physical"
+    PSYCHOLOGICAL = "psychological"
+    PRIVACY = "privacy"
+    SOCIAL = "social"
+    ECONOMIC = "economic"
 
 
 class BIDSEvent(BaseModel):
@@ -119,3 +153,63 @@ class PackageRequest(BaseModel):
     include_bids: bool = Field(default=True, description="Include BIDS templates")
     custom_events: Optional[List[BIDSEvent]] = Field(None, description="Custom BIDS events")
     additional_metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
+
+
+class DynamicConsent(BaseModel):
+    """Dynamic consent management model."""
+    participant_id: str = Field(..., description="Unique participant identifier")
+    consent_permissions: Dict[ConsentType, ConsentStatus] = Field(..., description="Consent permissions")
+    language_preference: str = Field(default="en", description="Participant language preference")
+    consent_date: datetime = Field(default_factory=datetime.now)
+    last_updated: datetime = Field(default_factory=datetime.now)
+    withdrawal_date: Optional[datetime] = Field(None, description="Date of consent withdrawal")
+    notes: Optional[str] = Field(None, description="Additional consent notes")
+
+
+class RiskAssessment(BaseModel):
+    """Enhanced risk assessment model."""
+    risk_category: RiskCategory = Field(..., description="Category of risk")
+    risk_level: RiskLevel = Field(..., description="Assessed risk level")
+    probability: float = Field(..., ge=0, le=1, description="Risk probability (0-1)")
+    severity: float = Field(..., ge=0, le=1, description="Risk severity (0-1)")
+    mitigation_strategies: List[str] = Field(default_factory=list, description="Risk mitigation strategies")
+    calculated_score: Optional[float] = Field(None, description="Calculated risk score")
+
+
+class ComplianceCheck(BaseModel):
+    """Compliance checking result."""
+    check_type: str = Field(..., description="Type of compliance check")
+    status: ComplianceStatus = Field(..., description="Compliance status")
+    details: str = Field(..., description="Detailed compliance information")
+    recommendations: List[str] = Field(default_factory=list, description="Compliance recommendations")
+    checked_at: datetime = Field(default_factory=datetime.now)
+
+
+class RecruitmentPlan(BaseModel):
+    """Equity-focused recruitment planning."""
+    target_demographics: Dict[str, Any] = Field(..., description="Target demographic breakdowns")
+    recruitment_strategies: List[str] = Field(..., description="Recruitment strategies")
+    diversity_requirements: Optional[Dict[str, float]] = Field(None, description="NIH diversity requirements")
+    estimated_timeline: Optional[str] = Field(None, description="Estimated recruitment timeline")
+    budget_considerations: Optional[Dict[str, float]] = Field(None, description="Budget considerations")
+
+
+class AuditEntry(BaseModel):
+    """Audit trail entry for version control."""
+    entry_id: str = Field(..., description="Unique audit entry ID")
+    session_id: str = Field(..., description="Associated session ID")
+    action: str = Field(..., description="Action performed")
+    user_id: str = Field(..., description="User who performed the action")
+    timestamp: datetime = Field(default_factory=datetime.now)
+    changes: Dict[str, Any] = Field(default_factory=dict, description="Changes made")
+    version: str = Field(..., description="Document version")
+
+
+class ParticipantCommunication(BaseModel):
+    """Participant communication tracking."""
+    participant_id: str = Field(..., description="Participant identifier")
+    communication_type: str = Field(..., description="Type of communication")
+    message_content: str = Field(..., description="Message content")
+    sent_at: datetime = Field(default_factory=datetime.now)
+    delivery_status: str = Field(default="pending", description="Delivery status")
+    irb_approved: bool = Field(default=False, description="IRB approval status for communication")

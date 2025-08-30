@@ -1,0 +1,18 @@
+{
+  "onset": {
+    "Description": "Onset time of the event in seconds"
+  },
+  "duration": {
+    "Description": "Duration of the event in seconds"
+  },
+  "trial_type": {
+    "Description": "Type of resting state period",
+    "Levels": {
+      "start_recording": "Start of data recording",
+      "eyes_open_rest": "Eyes open resting state",
+      "eyes_closed_rest": "Eyes closed resting state",
+      "instruction": "Instruction presentation",
+      "end_recording": "End of data recording"
+    }
+  }
+}

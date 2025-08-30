@@ -1,6 +1,6 @@
 # IRB Session Packager
 
-A comprehensive FastAPI-based web application for creating standard operating procedures, IRB appendices, and BIDS event templates for imaging research sessions.
+A comprehensive FastAPI-based web application for creating standard operating procedures, IRB appendices, and BIDS event templates for imaging research sessions. **Now enhanced with advanced compliance features, dynamic consent management, and AI-assisted tools.**
 
 ## Features
 
@@ -11,6 +11,14 @@ A comprehensive FastAPI-based web application for creating standard operating pr
 - **Data Management Plans**: HIPAA-compliant data handling procedures
 - **Adverse Events Protocol**: Safety monitoring and reporting procedures
 - **Recruitment Materials**: IRB-approved recruitment flyers and communications
+
+### 🧠 Enhanced IRB Features (NEW)
+- **Dynamic Consent Management**: Real-time consent tracking with withdrawal capabilities
+- **Interactive Risk Calculator**: Automated risk scoring based on multiple factors
+- **AI-Assisted Compliance Checking**: Automated document validation and recommendations
+- **Equity-Focused Recruitment Planning**: NIH diversity requirement compliance
+- **Audit Trail & Version Control**: Complete change tracking for all documents
+- **Mock IRB Review**: AI-powered pre-submission review and feedback
 
 ### 📋 Standard Operating Procedures
 - **Modality-Specific SOPs**: Customized protocols for fMRI, EEG, TMS, MRI, PET, MEG
@@ -31,6 +39,12 @@ A comprehensive FastAPI-based web application for creating standard operating pr
 - **Validation Engine**: Comprehensive package validation
 - **Summary Reports**: Package overview and statistics
 - **Custom Events**: Support for custom BIDS events
+
+### 🤝 Integration & Communication (NEW)
+- **External API Integration**: Hooks for ezBIDS, OpenNeuro, brainlife.io, InformGen
+- **Participant Communication**: Automated, IRB-approved messaging system
+- **Multi-language Support**: Dynamic consent forms with translation support
+- **Real-time Monitoring**: Participant safety and adverse event tracking
 
 ## Quick Start
 
@@ -103,6 +117,32 @@ curl http://localhost:8000/api/download-package/study_001_session_01?format=zip
 - `GET /api/download-package/{session_id}` - Download package
 - `GET /api/package-summary/{session_id}` - Get package summary
 - `POST /api/validate-package` - Validate package before creation
+
+### Enhanced Features (NEW)
+
+#### Dynamic Consent Management
+- `POST /api/consent/create` - Create or update participant consent
+- `GET /api/consent/{participant_id}` - Get consent information
+- `PUT /api/consent/{participant_id}/update` - Update consent status
+- `POST /api/consent/{participant_id}/withdraw` - Withdraw consent
+- `POST /api/consent/{participant_id}/check-validity` - Check consent validity
+- `GET /api/consent/report` - Generate consent status report
+
+#### Risk Assessment & Compliance
+- `POST /api/risk/calculate` - Calculate comprehensive risk scores
+- `POST /api/compliance/check` - Automated compliance checking
+- `POST /api/recruitment/plan` - Generate recruitment plans
+
+#### Audit & Communication
+- `GET /api/audit/trail/{session_id}` - Get audit trail
+- `GET /api/audit/document-versions/{session_id}/{document_type}` - Get document versions
+- `GET /api/audit/report` - Generate audit reports
+- `POST /api/communication/log` - Log participant communications
+- `GET /api/communication/history/{participant_id}` - Get communication history
+
+#### AI & Integration
+- `POST /api/ai/mock-review` - AI mock IRB review
+- `GET /api/integrations/apis` - Available integration APIs
 
 ## Supported Modalities
 
