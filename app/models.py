@@ -189,7 +189,7 @@ class RecruitmentPlan(BaseModel):
     """Equity-focused recruitment planning."""
     target_demographics: Dict[str, Any] = Field(..., description="Target demographic breakdowns")
     recruitment_strategies: List[str] = Field(..., description="Recruitment strategies")
-    diversity_requirements: Optional[Dict[str, float]] = Field(None, description="NIH diversity requirements")
+    diversity_requirements: Optional[Dict[str, Any]] = Field(None, description="NIH diversity requirements")
     estimated_timeline: Optional[str] = Field(None, description="Estimated recruitment timeline")
     budget_considerations: Optional[Dict[str, float]] = Field(None, description="Budget considerations")
 
