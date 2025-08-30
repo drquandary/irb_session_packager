@@ -1,0 +1,28 @@
+{
+  "onset": {
+    "Description": "Onset time of the event in seconds"
+  },
+  "duration": {
+    "Description": "Duration of the event in seconds"
+  },
+  "trial_type": {
+    "Description": "Type of trial",
+    "Levels": {
+      "instruction": "Instruction presentation",
+      "baseline": "Baseline period",
+      "cue": "Cue presentation",
+      "stimulus": "Stimulus presentation",
+      "response": "Response period",
+      "rest": "Rest period"
+    }
+  },
+  "response_time": {
+    "Description": "Response time in milliseconds"
+  },
+  "accuracy": {
+    "Description": "Accuracy of response (1=correct, 0=incorrect)"
+  },
+  "stimulus_file": {
+    "Description": "Path to stimulus file"
+  }
+}

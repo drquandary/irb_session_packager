@@ -1,17 +1,20 @@
 """Common configuration management for BSC AI Apps."""
 
-import os
 import json
+import os
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
-from dataclasses import dataclass, field
+
 from .logging_config import get_logger
 
 logger = get_logger(__name__)
 
+
 @dataclass
 class AppConfig:
     """Base configuration class for BSC AI Apps."""
+
     app_name: str = "BSC AI App"
     debug: bool = False
     host: str = "localhost"
@@ -25,6 +28,7 @@ class AppConfig:
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.temp_dir.mkdir(parents=True, exist_ok=True)
 
+
 def load_config_from_env(config_class: type = AppConfig) -> Any:
     """Load configuration from environment variables."""
     config_dict = {}
@@ -36,7 +40,7 @@ def load_config_from_env(config_class: type = AppConfig) -> Any:
         if env_value is not None:
             # Convert string values to appropriate types
             if field_info.type == bool:
-                config_dict[field_name] = env_value.lower() in ('true', '1', 'yes')
+                config_dict[field_name] = env_value.lower() in ("true", "1", "yes")
             elif field_info.type == int:
                 try:
                     config_dict[field_name] = int(env_value)
@@ -49,6 +53,7 @@ def load_config_from_env(config_class: type = AppConfig) -> Any:
 
     return config_class(**config_dict)
 
+
 def load_config_from_file(config_file: Path, config_class: type = AppConfig) -> Any:
     """Load configuration from JSON file."""
     if not config_file.exists():
@@ -56,18 +61,19 @@ def load_config_from_file(config_file: Path, config_class: type = AppConfig) -> 
         return config_class()
 
     try:
-        with open(config_file, 'r') as f:
+        with open(config_file, "r") as f:
             config_data = json.load(f)
 
         # Convert string paths to Path objects
         for key, value in config_data.items():
-            if key.endswith('_dir') and isinstance(value, str):
+            if key.endswith("_dir") and isinstance(value, str):
                 config_data[key] = Path(value)
 
         return config_class(**config_data)
     except Exception as e:
         logger.error(f"Error loading config from {config_file}: {e}")
         return config_class()
+
 
 def save_config_to_file(config: Any, config_file: Path):
     """Save configuration to JSON file."""
@@ -83,13 +89,16 @@ def save_config_to_file(config: Any, config_file: Path):
             config_dict[field_name] = value
 
     try:
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             json.dump(config_dict, f, indent=2)
         logger.info(f"Configuration saved to {config_file}")
     except Exception as e:
         logger.error(f"Error saving config to {config_file}: {e}")
 
-def get_config(config_class: type = AppConfig, config_file: Optional[Path] = None) -> Any:
+
+def get_config(
+    config_class: type = AppConfig, config_file: Optional[Path] = None
+) -> Any:
     """Get configuration with priority: env vars > config file > defaults."""
     # Start with defaults
     config = config_class()
