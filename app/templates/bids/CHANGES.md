@@ -1,0 +1,1 @@
+"# Changelog\nAll notable changes to this dataset will be documented in this file.\n\n## [1.0.0] - YYYY-MM-DD\n### Added\n- Initial dataset creation\n- BIDS-compliant structure\n- Participant recruitment materials\n"

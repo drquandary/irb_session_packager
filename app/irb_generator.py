@@ -1,8 +1,11 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 from datetime import datetime
-from .models import IRBDocument, SessionMetadata, RiskLevel, ParticipantPopulation, ImagingModality
+from .models import (
+    IRBDocument, SessionMetadata, RiskLevel, ParticipantPopulation, ImagingModality,
+    RiskAssessment, RiskCategory, ComplianceCheck, ComplianceStatus, RecruitmentPlan
+)
 
 
 class IRBGenerator:
@@ -757,3 +760,210 @@ Phone: {{ contact_phone }}
 
 This study has been approved by the Institutional Review Board.
 """
+
+    def calculate_risk_score(self, metadata: SessionMetadata, risk_assessments: List[RiskAssessment]) -> Dict[str, Any]:
+        """Calculate comprehensive risk score based on multiple factors."""
+        if not risk_assessments:
+            return {"overall_score": 0.0, "risk_level": RiskLevel.MINIMAL, "details": "No risk assessments provided"}
+        
+        # Calculate weighted risk score
+        total_score = 0.0
+        weights = {
+            RiskCategory.PHYSICAL: 0.3,
+            RiskCategory.PSYCHOLOGICAL: 0.25,
+            RiskCategory.PRIVACY: 0.2,
+            RiskCategory.SOCIAL: 0.15,
+            RiskCategory.ECONOMIC: 0.1
+        }
+        
+        category_scores = {}
+        for assessment in risk_assessments:
+            score = assessment.probability * assessment.severity
+            weight = weights.get(assessment.risk_category, 0.1)
+            weighted_score = score * weight
+            total_score += weighted_score
+            category_scores[assessment.risk_category.value] = score
+        
+        # Determine overall risk level
+        if total_score < 0.25:
+            overall_risk = RiskLevel.MINIMAL
+        elif total_score < 0.5:
+            overall_risk = RiskLevel.LOW
+        elif total_score < 0.75:
+            overall_risk = RiskLevel.MODERATE
+        else:
+            overall_risk = RiskLevel.HIGH
+        
+        return {
+            "overall_score": round(total_score, 3),
+            "risk_level": overall_risk,
+            "category_scores": category_scores,
+            "modality_factor": self._get_modality_risk_factor(metadata.modality),
+            "population_factor": self._get_population_risk_factor(metadata.participant_population)
+        }
+
+    def _get_modality_risk_factor(self, modality: ImagingModality) -> float:
+        """Get risk multiplier based on imaging modality."""
+        risk_factors = {
+            ImagingModality.FMRI: 0.3,
+            ImagingModality.MRI: 0.2,
+            ImagingModality.EEG: 0.1,
+            ImagingModality.MEG: 0.15,
+            ImagingModality.PET: 0.6,
+            ImagingModality.TMS: 0.4
+        }
+        return risk_factors.get(modality, 0.25)
+
+    def _get_population_risk_factor(self, population: ParticipantPopulation) -> float:
+        """Get risk multiplier based on participant population."""
+        risk_factors = {
+            ParticipantPopulation.HEALTHY_ADULTS: 1.0,
+            ParticipantPopulation.CHILDREN: 1.5,
+            ParticipantPopulation.ELDERLY: 1.3,
+            ParticipantPopulation.PREGNANT: 2.0,
+            ParticipantPopulation.CLINICAL: 1.4
+        }
+        return risk_factors.get(population, 1.0)
+
+    def check_compliance(self, metadata: SessionMetadata, document_content: str) -> List[ComplianceCheck]:
+        """Perform automated compliance checking on IRB documents."""
+        checks = []
+        
+        # Check for required elements in informed consent
+        checks.append(self._check_informed_consent_compliance(document_content))
+        
+        # Check risk assessment completeness
+        checks.append(self._check_risk_assessment_compliance(metadata))
+        
+        # Check for compensation details
+        checks.append(self._check_compensation_details(document_content))
+        
+        # Check for contact information
+        checks.append(self._check_contact_information(document_content))
+        
+        return [check for check in checks if check is not None]
+
+    def _check_informed_consent_compliance(self, content: str) -> Optional[ComplianceCheck]:
+        """Check informed consent for required elements."""
+        required_elements = [
+            "purpose", "procedure", "risk", "benefit", "confidentiality", 
+            "voluntary", "contact", "consent"
+        ]
+        
+        missing_elements = []
+        for element in required_elements:
+            if element.lower() not in content.lower():
+                missing_elements.append(element)
+        
+        if missing_elements:
+            return ComplianceCheck(
+                check_type="informed_consent_completeness",
+                status=ComplianceStatus.NON_COMPLIANT,
+                details=f"Missing required elements: {', '.join(missing_elements)}",
+                recommendations=[f"Add {element} section to informed consent" for element in missing_elements]
+            )
+        
+        return ComplianceCheck(
+            check_type="informed_consent_completeness",
+            status=ComplianceStatus.COMPLIANT,
+            details="All required elements present in informed consent",
+            recommendations=[]
+        )
+
+    def _check_risk_assessment_compliance(self, metadata: SessionMetadata) -> ComplianceCheck:
+        """Check if risk assessment is appropriate for the study design."""
+        if metadata.risk_level == RiskLevel.MINIMAL and metadata.modality == ImagingModality.PET:
+            return ComplianceCheck(
+                check_type="risk_assessment_accuracy",
+                status=ComplianceStatus.NEEDS_REVIEW,
+                details="PET scans typically involve more than minimal risk due to radiation exposure",
+                recommendations=["Review risk level classification for PET procedures"]
+            )
+        
+        return ComplianceCheck(
+            check_type="risk_assessment_accuracy",
+            status=ComplianceStatus.COMPLIANT,
+            details="Risk assessment appears appropriate for study design",
+            recommendations=[]
+        )
+
+    def _check_compensation_details(self, content: str) -> ComplianceCheck:
+        """Check for adequate compensation information."""
+        compensation_keywords = ["compensation", "payment", "reimbursement", "stipend"]
+        
+        if not any(keyword in content.lower() for keyword in compensation_keywords):
+            return ComplianceCheck(
+                check_type="compensation_details",
+                status=ComplianceStatus.NEEDS_REVIEW,
+                details="No compensation information found",
+                recommendations=["Add clear compensation details to informed consent"]
+            )
+        
+        return ComplianceCheck(
+            check_type="compensation_details",
+            status=ComplianceStatus.COMPLIANT,
+            details="Compensation information present",
+            recommendations=[]
+        )
+
+    def _check_contact_information(self, content: str) -> ComplianceCheck:
+        """Check for adequate contact information."""
+        if "contact" not in content.lower() or "principal investigator" not in content.lower():
+            return ComplianceCheck(
+                check_type="contact_information",
+                status=ComplianceStatus.NON_COMPLIANT,
+                details="Missing contact information or principal investigator details",
+                recommendations=["Add complete contact information including PI details"]
+            )
+        
+        return ComplianceCheck(
+            check_type="contact_information",
+            status=ComplianceStatus.COMPLIANT,
+            details="Contact information present",
+            recommendations=[]
+        )
+
+    def generate_recruitment_plan(self, metadata: SessionMetadata, target_demographics: Dict[str, Any]) -> RecruitmentPlan:
+        """Generate equity-focused recruitment plan."""
+        strategies = []
+        
+        # Base recruitment strategies
+        strategies.extend([
+            "Community outreach through local organizations",
+            "Social media advertising with targeted demographics",
+            "Flyers in community centers and libraries"
+        ])
+        
+        # Population-specific strategies
+        if metadata.participant_population == ParticipantPopulation.ELDERLY:
+            strategies.extend([
+                "Partner with senior centers and retirement communities",
+                "Collaborate with geriatric healthcare providers"
+            ])
+        elif metadata.participant_population == ParticipantPopulation.CHILDREN:
+            strategies.extend([
+                "Partner with schools and pediatric clinics",
+                "Engage with parent groups and family organizations"
+            ])
+        
+        # NIH diversity requirements (example percentages)
+        diversity_requirements = {
+            "gender_distribution": {"female": 0.5, "male": 0.5},
+            "racial_distribution": {
+                "white": 0.6, "black": 0.13, "hispanic": 0.18, 
+                "asian": 0.06, "other": 0.03
+            },
+            "age_distribution": target_demographics.get("age_distribution", {})
+        }
+        
+        return RecruitmentPlan(
+            target_demographics=target_demographics,
+            recruitment_strategies=strategies,
+            diversity_requirements=diversity_requirements,
+            estimated_timeline=f"{metadata.expected_participants // 10 + 1} months",
+            budget_considerations={
+                "advertising": 500 * (metadata.expected_participants // 100 + 1),
+                "compensation": metadata.expected_participants * 50,  # Assume $50 per participant
+                "staff_time": metadata.expected_participants * 2  # 2 hours per participant
+            }
+        )

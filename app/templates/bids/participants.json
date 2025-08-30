@@ -1,0 +1,25 @@
+{
+  "participant_id": {
+    "Description": "Unique participant identifier",
+    "LongName": "Participant ID"
+  },
+  "age": {
+    "Description": "Participant age in years",
+    "Units": "years"
+  },
+  "sex": {
+    "Description": "Participant sex",
+    "Levels": {
+      "M": "Male",
+      "F": "Female",
+      "O": "Other"
+    }
+  },
+  "group": {
+    "Description": "Participant group",
+    "Levels": {
+      "control": "Control group",
+      "patient": "Patient group"
+    }
+  }
+}

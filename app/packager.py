@@ -55,10 +55,10 @@ class SessionPackager:
         try:
             # Convert package to dict for storage
             package_dict = {
-                "session_metadata": package.session_metadata.dict(),
-                "bids_events": [event.dict() for event in package.bids_events],
-                "sop_documents": [doc.dict() for doc in package.sop_documents],
-                "irb_documents": [doc.dict() for doc in package.irb_documents],
+                "session_metadata": package.session_metadata.model_dump(),
+                "bids_events": [event.model_dump() for event in package.bids_events],
+                "sop_documents": [doc.model_dump() for doc in package.sop_documents],
+                "irb_documents": [doc.model_dump() for doc in package.irb_documents],
                 "created_at": package.created_at.isoformat()
             }
 
@@ -132,12 +132,22 @@ class SessionPackager:
     def delete_package(self, session_id: str) -> bool:
         """Delete a package from storage."""
         try:
-            self.storage_db.execute_update(
+            # Check if package exists first
+            existing = self.storage_db.execute_query(
+                "SELECT id FROM packages WHERE session_id = ?",
+                (session_id,)
+            )
+            
+            if not existing:
+                return False
+            
+            result = self.storage_db.execute_update(
                 "DELETE FROM packages WHERE session_id = ?",
                 (session_id,)
             )
+            
             logger.info(f"Package deleted: {session_id}")
-            return True
+            return result > 0
         except Exception as e:
             logger.error(f"Error deleting package {session_id}: {e}")
             return False
@@ -223,10 +233,10 @@ class SessionPackager:
         
         # Convert to dict for JSON serialization
         package_dict = {
-            "session_metadata": package.session_metadata.dict(),
-            "bids_events": [event.dict() for event in package.bids_events],
-            "sop_documents": [doc.dict() for doc in package.sop_documents],
-            "irb_documents": [doc.dict() for doc in package.irb_documents],
+            "session_metadata": package.session_metadata.model_dump(),
+            "bids_events": [event.model_dump() for event in package.bids_events],
+            "sop_documents": [doc.model_dump() for doc in package.sop_documents],
+            "irb_documents": [doc.model_dump() for doc in package.irb_documents],
             "created_at": package.created_at.isoformat()
         }
         
