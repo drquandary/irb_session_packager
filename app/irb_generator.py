@@ -595,3 +595,165 @@ Best regards,
             ])
         
         return "\n".join(f"- {criterion}" for criterion in criteria)
+    
+    def _get_informed_consent_template(self):
+        """Get default informed consent template."""
+        return """
+# INFORMED CONSENT FORM
+## {{ study_name }}
+
+### Principal Investigator: {{ principal_investigator }}
+### Study ID: {{ session_id }}
+### Date: {{ date }}
+
+---
+
+## PURPOSE OF STUDY
+You are being asked to participate in a research study involving {{ modality }} imaging techniques.
+
+## STUDY PROCEDURES
+- Duration: Approximately {{ duration_minutes }} minutes
+- Session type: {{ session_type }}
+- Participant population: {{ participant_population }}
+
+## RISKS AND DISCOMFORTS
+{{ risk_description }}
+
+## BENEFITS
+There are no direct benefits to participants, but findings may contribute to scientific knowledge.
+
+## CONFIDENTIALITY
+All data will be de-identified and stored securely according to institutional policies.
+
+## VOLUNTARY PARTICIPATION
+Participation is voluntary and you may withdraw at any time without penalty.
+
+---
+Participant Signature: ___________________ Date: _________
+"""
+
+    def _get_risk_assessment_template(self):
+        """Get default risk assessment template."""
+        return """
+# RISK ASSESSMENT
+## {{ study_name }}
+
+### Risk Level: {{ risk_level }}
+
+### Potential Risks:
+- Physical discomfort during imaging procedures
+- Psychological distress from experimental tasks
+- Privacy risks from data collection
+
+### Risk Mitigation:
+- Trained personnel monitoring all procedures
+- Emergency protocols in place
+- Secure data handling procedures
+- Right to withdraw at any time
+
+### Benefit-Risk Analysis:
+Scientific benefits outweigh minimal risks to participants.
+"""
+
+    def _get_protocol_summary_template(self):
+        """Get default protocol summary template."""
+        return """
+# PROTOCOL SUMMARY
+## {{ study_name }}
+
+### Study Overview:
+{{ study_description }}
+
+### Objectives:
+- Primary: {{ primary_objective }}
+- Secondary: {{ secondary_objectives }}
+
+### Study Design:
+- Type: {{ study_type }}
+- Duration: {{ duration_minutes }} minutes
+- Sample Size: {{ target_enrollment }}
+
+### Procedures:
+{{ procedures }}
+
+### Data Collection:
+{{ data_collection }}
+"""
+
+    def _get_data_management_template(self):
+        """Get default data management template."""
+        return """
+# DATA MANAGEMENT PLAN
+## {{ study_name }}
+
+### Data Collection:
+- Type: {{ data_types }}
+- Format: BIDS-compliant neuroimaging data
+- Storage: Secure institutional servers
+
+### Privacy Protection:
+- De-identification procedures
+- Access controls and encryption
+- HIPAA compliance
+
+### Data Retention:
+- Duration: 7 years minimum
+- Destruction timeline per institutional policy
+
+### Data Sharing:
+- De-identified data sharing after publication
+- Public repository deposits as appropriate
+"""
+
+    def _get_adverse_events_template(self):
+        """Get default adverse events template."""
+        return """
+# ADVERSE EVENTS PROTOCOL
+## {{ study_name }}
+
+### Definitions:
+Adverse events include any untoward medical occurrences during study participation.
+
+### Reporting Timeline:
+- Immediate: Life-threatening events (24 hours)
+- Expedited: Serious adverse events (72 hours)
+- Routine: All other events (7 days)
+
+### Contact Information:
+- Principal Investigator: {{ principal_investigator }}
+- IRB Office: {{ irb_contact }}
+- Emergency: 911
+
+### Documentation:
+All adverse events will be documented and reported per institutional requirements.
+"""
+
+    def _get_recruitment_template(self):
+        """Get default recruitment template."""
+        return """
+# RECRUITMENT MATERIALS
+## {{ study_name }}
+
+### Study Advertisement:
+
+**VOLUNTEERS NEEDED FOR BRAIN IMAGING STUDY**
+
+We are looking for healthy volunteers to participate in a research study using {{ modality }} to understand brain function.
+
+**What's Involved:**
+- Single {{ duration_minutes }}-minute session
+- Compensation provided
+- Contributes to important scientific research
+
+**Who Can Participate:**
+{{ inclusion_criteria }}
+
+**Who Cannot Participate:**
+{{ exclusion_criteria }}
+
+**Contact Information:**
+Email: {{ contact_email }}
+Phone: {{ contact_phone }}
+
+This study has been approved by the Institutional Review Board.
+"""
