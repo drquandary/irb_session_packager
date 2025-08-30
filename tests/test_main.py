@@ -8,38 +8,38 @@ client = TestClient(app)
 
 def test_root_serves_html():
     """Test that root serves HTML interface."""
-    response = client.get('/')
+    response = client.get("/")
     assert response.status_code == 200
-    assert 'text/html' in response.headers.get('content-type', '')
-    assert 'IRB Session Packager' in response.text
+    assert "text/html" in response.headers.get("content-type", "")
+    assert "IRB Session Packager" in response.text
 
 
 def test_api_root():
     """Test API root endpoint."""
-    response = client.get('/api/')
+    response = client.get("/api/")
     assert response.status_code == 200
-    assert response.json().get('detail') == 'IRB and Session Packager API'
+    assert response.json().get("detail") == "IRB and Session Packager API"
 
 
 def test_health():
     """Test health check endpoint."""
-    response = client.get('/api/health')
+    response = client.get("/api/health")
     assert response.status_code == 200
     data = response.json()
-    assert data.get('status') == 'ok'
-    assert 'service' in data
+    assert data.get("status") == "ok"
+    assert "service" in data
 
 
 def test_get_modalities():
     """Test modalities endpoint."""
-    response = client.get('/api/modalities')
+    response = client.get("/api/modalities")
     assert response.status_code == 200
     data = response.json()
-    assert 'modalities' in data
-    assert 'session_types' in data
-    assert 'risk_levels' in data
-    assert 'populations' in data
-    assert 'fMRI' in data['modalities']
+    assert "modalities" in data
+    assert "session_types" in data
+    assert "risk_levels" in data
+    assert "populations" in data
+    assert "fMRI" in data["modalities"]
 
 
 def test_create_package():
@@ -54,19 +54,19 @@ def test_create_package():
             "participant_population": "healthy_adults",
             "risk_level": "minimal",
             "duration_minutes": 60,
-            "expected_participants": 20
+            "expected_participants": 20,
         },
         "include_sop": True,
         "include_irb": True,
-        "include_bids": True
+        "include_bids": True,
     }
 
-    response = client.post('/api/create-package', json=payload)
+    response = client.post("/api/create-package", json=payload)
     assert response.status_code == 200
     data = response.json()
-    assert data['session_id'] == 'test_session_001'
-    assert 'package_summary' in data
-    assert 'created_at' in data
+    assert data["session_id"] == "test_session_001"
+    assert "package_summary" in data
+    assert "created_at" in data
 
 
 def test_create_package_invalid_data():
@@ -81,14 +81,14 @@ def test_create_package_invalid_data():
             "participant_population": "healthy_adults",
             "risk_level": "minimal",
             "duration_minutes": 60,
-            "expected_participants": 20
+            "expected_participants": 20,
         },
         "include_sop": True,
         "include_irb": True,
-        "include_bids": True
+        "include_bids": True,
     }
 
-    response = client.post('/api/create-package', json=payload)
+    response = client.post("/api/create-package", json=payload)
     assert response.status_code == 422  # Validation error
 
 
@@ -105,30 +105,30 @@ def test_package_summary_existing():
             "participant_population": "clinical_population",
             "risk_level": "low",
             "duration_minutes": 30,
-            "expected_participants": 15
+            "expected_participants": 15,
         },
         "include_sop": True,
         "include_irb": True,
-        "include_bids": True
+        "include_bids": True,
     }
 
-    create_response = client.post('/api/create-package', json=payload)
+    create_response = client.post("/api/create-package", json=payload)
     assert create_response.status_code == 200
 
     # Now get summary
-    response = client.get('/api/package-summary/test_summary_001')
+    response = client.get("/api/package-summary/test_summary_001")
     assert response.status_code == 200
     data = response.json()
-    assert data['session_id'] == 'test_summary_001'
-    assert data['modality'] == 'EEG'
-    assert 'document_counts' in data
+    assert data["session_id"] == "test_summary_001"
+    assert data["modality"] == "EEG"
+    assert "document_counts" in data
 
 
 def test_package_summary_nonexistent():
     """Test getting summary of nonexistent package."""
-    response = client.get('/api/package-summary/nonexistent_123')
+    response = client.get("/api/package-summary/nonexistent_123")
     assert response.status_code == 404
-    assert 'not found' in response.json()['detail'].lower()
+    assert "not found" in response.json()["detail"].lower()
 
 
 def test_export_package_existing():
@@ -144,37 +144,31 @@ def test_export_package_existing():
             "participant_population": "healthy_adults",
             "risk_level": "moderate",
             "duration_minutes": 45,
-            "expected_participants": 10
+            "expected_participants": 10,
         },
         "include_sop": True,
         "include_irb": True,
-        "include_bids": True
+        "include_bids": True,
     }
 
-    create_response = client.post('/api/create-package', json=payload)
+    create_response = client.post("/api/create-package", json=payload)
     assert create_response.status_code == 200
 
     # Now export
-    export_payload = {
-        "session_id": "test_export_001",
-        "formats": ["json", "pdf"]
-    }
+    export_payload = {"session_id": "test_export_001", "formats": ["json", "pdf"]}
 
-    response = client.post('/api/export-package', json=export_payload)
+    response = client.post("/api/export-package", json=export_payload)
     assert response.status_code == 200
     data = response.json()
-    assert data['session_id'] == 'test_export_001'
-    assert 'exported_files' in data
+    assert data["session_id"] == "test_export_001"
+    assert "exported_files" in data
 
 
 def test_export_package_nonexistent():
     """Test exporting nonexistent package."""
-    export_payload = {
-        "session_id": "nonexistent_export_123",
-        "formats": ["json"]
-    }
+    export_payload = {"session_id": "nonexistent_export_123", "formats": ["json"]}
 
-    response = client.post('/api/export-package', json=export_payload)
+    response = client.post("/api/export-package", json=export_payload)
     assert response.status_code == 404
 
 
@@ -191,25 +185,25 @@ def test_download_package_existing():
             "participant_population": "elderly",
             "risk_level": "high",
             "duration_minutes": 120,
-            "expected_participants": 5
+            "expected_participants": 5,
         },
         "include_sop": True,
         "include_irb": True,
-        "include_bids": True
+        "include_bids": True,
     }
 
-    create_response = client.post('/api/create-package', json=payload)
+    create_response = client.post("/api/create-package", json=payload)
     assert create_response.status_code == 200
 
     # Now download
-    response = client.get('/api/download-package/test_download_001?format=json')
+    response = client.get("/api/download-package/test_download_001?format=json")
     assert response.status_code == 200
-    assert 'application/json' in response.headers.get('content-type', '')
+    assert "application/json" in response.headers.get("content-type", "")
 
 
 def test_download_package_nonexistent():
     """Test downloading nonexistent package."""
-    response = client.get('/api/download-package/nonexistent_download_123?format=json')
+    response = client.get("/api/download-package/nonexistent_download_123?format=json")
     assert response.status_code == 404
 
 
@@ -225,27 +219,27 @@ def test_validate_package():
             "participant_population": "children",
             "risk_level": "low",
             "duration_minutes": 90,
-            "expected_participants": 25
+            "expected_participants": 25,
         },
         "include_sop": True,
         "include_irb": True,
-        "include_bids": True
+        "include_bids": True,
     }
 
-    response = client.post('/api/validate-package', json=payload)
+    response = client.post("/api/validate-package", json=payload)
     assert response.status_code == 200
     data = response.json()
-    assert 'valid' in data
-    assert isinstance(data['valid'], bool)
+    assert "valid" in data
+    assert isinstance(data["valid"], bool)
 
 
 def test_list_packages():
     """Test listing packages."""
-    response = client.get('/api/packages')
+    response = client.get("/api/packages")
     assert response.status_code == 200
     data = response.json()
-    assert 'packages' in data
-    assert isinstance(data['packages'], list)
+    assert "packages" in data
+    assert isinstance(data["packages"], list)
 
 
 def test_delete_package_existing():
@@ -261,24 +255,24 @@ def test_delete_package_existing():
             "participant_population": "pregnant",
             "risk_level": "low",
             "duration_minutes": 20,
-            "expected_participants": 8
+            "expected_participants": 8,
         },
         "include_sop": True,
         "include_irb": True,
-        "include_bids": True
+        "include_bids": True,
     }
 
-    create_response = client.post('/api/create-package', json=payload)
+    create_response = client.post("/api/create-package", json=payload)
     assert create_response.status_code == 200
 
     # Now delete
-    response = client.delete('/api/package/test_delete_001')
+    response = client.delete("/api/package/test_delete_001")
     assert response.status_code == 200
     data = response.json()
-    assert 'deleted successfully' in data['message']
+    assert "deleted successfully" in data["message"]
 
 
 def test_delete_package_nonexistent():
     """Test deleting nonexistent package."""
-    response = client.delete('/api/package/nonexistent_delete_123')
+    response = client.delete("/api/package/nonexistent_delete_123")
     assert response.status_code == 404

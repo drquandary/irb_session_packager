@@ -1,14 +1,22 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks
-from fastapi.responses import FileResponse
-from pydantic import BaseModel
-from pathlib import Path
 import json
 import tempfile
-from typing import List, Optional, Dict, Any
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
+
 from .models import (
-    SessionMetadata, PackageRequest, SessionPackage, 
-    ImagingModality, SessionType, RiskLevel, ParticipantPopulation, BIDSEvent
+    BIDSEvent,
+    ImagingModality,
+    PackageRequest,
+    ParticipantPopulation,
+    RiskLevel,
+    SessionMetadata,
+    SessionPackage,
+    SessionType,
 )
 from .packager import SessionPackager
 
@@ -20,6 +28,7 @@ packager = SessionPackager()
 
 class SessionCreateRequest(BaseModel):
     """Request model for creating a session package."""
+
     session_metadata: SessionMetadata
     include_sop: bool = True
     include_irb: bool = True
@@ -30,6 +39,7 @@ class SessionCreateRequest(BaseModel):
 
 class SessionCreateResponse(BaseModel):
     """Response model for session creation."""
+
     session_id: str
     package_summary: Dict[str, Any]
     created_at: datetime
@@ -37,29 +47,30 @@ class SessionCreateResponse(BaseModel):
 
 class ExportRequest(BaseModel):
     """Request model for exporting packages."""
+
     session_id: str
     formats: List[str] = ["json", "pdf", "docx", "bids", "zip"]
     output_dir: Optional[str] = None
 
 
-@router.get('/health')
+@router.get("/health")
 async def health():
     """Health check endpoint."""
-    return {'status': 'ok', 'service': 'IRB Session Packager'}
+    return {"status": "ok", "service": "IRB Session Packager"}
 
 
-@router.get('/modalities')
+@router.get("/modalities")
 async def get_modalities():
     """Get available imaging modalities."""
     return {
         "modalities": [modality.value for modality in ImagingModality],
         "session_types": [stype.value for stype in SessionType],
         "risk_levels": [risk.value for risk in RiskLevel],
-        "populations": [pop.value for pop in ParticipantPopulation]
+        "populations": [pop.value for pop in ParticipantPopulation],
     }
 
 
-@router.post('/create-package')
+@router.post("/create-package")
 async def create_package(request: SessionCreateRequest):
     """Create a new session package."""
     try:
@@ -70,34 +81,34 @@ async def create_package(request: SessionCreateRequest):
             include_irb=request.include_irb,
             include_bids=request.include_bids,
             custom_events=request.custom_events,
-            additional_metadata=request.additional_metadata
+            additional_metadata=request.additional_metadata,
         )
-        
+
         # Create the package
         session_package = packager.create_session_package(package_request)
-        
+
         # Validate the package
         validation = packager.validate_package(session_package)
         if not validation["valid"]:
             raise HTTPException(
-                status_code=400, 
-                detail=f"Package validation failed: {validation['errors']}"
+                status_code=400,
+                detail=f"Package validation failed: {validation['errors']}",
             )
-        
+
         # Get summary
         summary = packager.get_package_summary(session_package)
-        
+
         return SessionCreateResponse(
             session_id=session_package.session_metadata.session_id,
             package_summary=summary,
-            created_at=session_package.created_at
+            created_at=session_package.created_at,
         )
-    
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post('/export-package')
+@router.post("/export-package")
 async def export_package(request: ExportRequest, background_tasks: BackgroundTasks):
     """Export a session package in various formats."""
     try:
@@ -107,18 +118,18 @@ async def export_package(request: ExportRequest, background_tasks: BackgroundTas
         if session_package is None:
             raise HTTPException(
                 status_code=404,
-                detail=f"Package with session ID '{request.session_id}' not found"
+                detail=f"Package with session ID '{request.session_id}' not found",
             )
 
         # Determine output directory
-        output_dir = Path(request.output_dir) if request.output_dir else Path("./output")
+        output_dir = (
+            Path(request.output_dir) if request.output_dir else Path("./output")
+        )
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Export package
         exported_files = packager.export_package(
-            session_package,
-            output_dir,
-            request.formats
+            session_package, output_dir, request.formats
         )
 
         # Convert paths to strings for JSON serialization
@@ -127,7 +138,7 @@ async def export_package(request: ExportRequest, background_tasks: BackgroundTas
         return {
             "session_id": request.session_id,
             "exported_files": exported_files_str,
-            "export_time": datetime.now()
+            "export_time": datetime.now(),
         }
 
     except HTTPException:
@@ -136,7 +147,7 @@ async def export_package(request: ExportRequest, background_tasks: BackgroundTas
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get('/download-package/{session_id}')
+@router.get("/download-package/{session_id}")
 async def download_package(session_id: str, format: str = "zip"):
     """Download a session package."""
     try:
@@ -146,7 +157,7 @@ async def download_package(session_id: str, format: str = "zip"):
         if session_package is None:
             raise HTTPException(
                 status_code=404,
-                detail=f"Package with session ID '{session_id}' not found"
+                detail=f"Package with session ID '{session_id}' not found",
             )
 
         # Create temporary directory for export
@@ -158,17 +169,19 @@ async def download_package(session_id: str, format: str = "zip"):
                 return FileResponse(
                     path=str(zip_path),
                     filename=f"{session_id}_package.zip",
-                    media_type="application/zip"
+                    media_type="application/zip",
                 )
             elif format == "json":
                 json_path = packager._export_json(session_package, temp_path)
                 return FileResponse(
                     path=str(json_path),
                     filename=f"{session_id}_package.json",
-                    media_type="application/json"
+                    media_type="application/json",
                 )
             else:
-                raise HTTPException(status_code=400, detail=f"Unsupported format: {format}")
+                raise HTTPException(
+                    status_code=400, detail=f"Unsupported format: {format}"
+                )
 
     except HTTPException:
         raise
@@ -176,7 +189,7 @@ async def download_package(session_id: str, format: str = "zip"):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get('/package-summary/{session_id}')
+@router.get("/package-summary/{session_id}")
 async def get_package_summary(session_id: str):
     """Get a summary of a session package."""
     try:
@@ -186,7 +199,7 @@ async def get_package_summary(session_id: str):
         if session_package is None:
             raise HTTPException(
                 status_code=404,
-                detail=f"Package with session ID '{session_id}' not found"
+                detail=f"Package with session ID '{session_id}' not found",
             )
 
         summary = packager.get_package_summary(session_package)
@@ -198,7 +211,7 @@ async def get_package_summary(session_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post('/validate-package')
+@router.post("/validate-package")
 async def validate_package(request: SessionCreateRequest):
     """Validate a session package before creation."""
     try:
@@ -208,10 +221,12 @@ async def validate_package(request: SessionCreateRequest):
             include_irb=request.include_irb,
             include_bids=request.include_bids,
             custom_events=request.custom_events,
-            additional_metadata=request.additional_metadata
+            additional_metadata=request.additional_metadata,
         )
 
-        session_package = packager.create_session_package(package_request, save_to_storage=False)
+        session_package = packager.create_session_package(
+            package_request, save_to_storage=False
+        )
         validation = packager.validate_package(session_package)
 
         return validation
@@ -220,7 +235,7 @@ async def validate_package(request: SessionCreateRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get('/packages')
+@router.get("/packages")
 async def list_packages():
     """List all saved session packages."""
     try:
@@ -231,7 +246,7 @@ async def list_packages():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete('/package/{session_id}')
+@router.delete("/package/{session_id}")
 async def delete_package(session_id: str):
     """Delete a session package."""
     try:
@@ -239,7 +254,7 @@ async def delete_package(session_id: str):
         if not success:
             raise HTTPException(
                 status_code=404,
-                detail=f"Package with session ID '{session_id}' not found"
+                detail=f"Package with session ID '{session_id}' not found",
             )
         return {"message": f"Package '{session_id}' deleted successfully"}
 

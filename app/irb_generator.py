@@ -1,73 +1,83 @@
-from typing import List, Dict, Any
-from jinja2 import Environment, FileSystemLoader
-from pathlib import Path
 from datetime import datetime
-from .models import IRBDocument, SessionMetadata, RiskLevel, ParticipantPopulation, ImagingModality
+from pathlib import Path
+from typing import Any, Dict, List
+
+from jinja2 import Environment, FileSystemLoader
+
+from .models import (
+    ImagingModality,
+    IRBDocument,
+    ParticipantPopulation,
+    RiskLevel,
+    SessionMetadata,
+)
 
 
 class IRBGenerator:
     """Generates IRB-compliant documents and appendices."""
-    
+
     def __init__(self, template_dir: Path = None):
         """Initialize IRB generator with template directory."""
         if template_dir is None:
-            template_dir = Path(__file__).resolve().parent / 'templates' / 'irb'
-        
+            template_dir = Path(__file__).resolve().parent / "templates" / "irb"
+
         self.template_dir = template_dir
         self.template_dir.mkdir(parents=True, exist_ok=True)
         self.jinja_env = Environment(
             loader=FileSystemLoader(str(self.template_dir)),
             trim_blocks=True,
-            lstrip_blocks=True
+            lstrip_blocks=True,
         )
-        
+
         # Create default templates if they don't exist
         self._create_default_templates()
-    
+
     def _create_default_templates(self):
         """Create default IRB templates if they don't exist."""
         templates = {
-            'informed_consent.md': self._get_informed_consent_template(),
-            'risk_assessment.md': self._get_risk_assessment_template(),
-            'protocol_summary.md': self._get_protocol_summary_template(),
-            'data_management.md': self._get_data_management_template(),
-            'adverse_events.md': self._get_adverse_events_template(),
-            'recruitment.md': self._get_recruitment_template()
+            "informed_consent.md": self._get_informed_consent_template(),
+            "risk_assessment.md": self._get_risk_assessment_template(),
+            "protocol_summary.md": self._get_protocol_summary_template(),
+            "data_management.md": self._get_data_management_template(),
+            "adverse_events.md": self._get_adverse_events_template(),
+            "recruitment.md": self._get_recruitment_template(),
         }
-        
+
         for filename, content in templates.items():
             template_path = self.template_dir / filename
             if not template_path.exists():
                 template_path.write_text(content)
-    
-    def generate_irb_package(self, session_metadata: SessionMetadata) -> List[IRBDocument]:
+
+    def generate_irb_package(
+        self, session_metadata: SessionMetadata
+    ) -> List[IRBDocument]:
         """Generate complete IRB document package."""
         documents = []
-        
+
         # Generate informed consent
         documents.append(self._generate_informed_consent(session_metadata))
-        
+
         # Generate risk assessment
         documents.append(self._generate_risk_assessment(session_metadata))
-        
+
         # Generate protocol summary
         documents.append(self._generate_protocol_summary(session_metadata))
-        
+
         # Generate data management plan
         documents.append(self._generate_data_management_plan(session_metadata))
-        
+
         # Generate adverse events protocol
         documents.append(self._generate_adverse_events_protocol(session_metadata))
-        
+
         # Generate recruitment materials
         documents.append(self._generate_recruitment_materials(session_metadata))
-        
+
         return documents
-    
+
     def _generate_informed_consent(self, metadata: SessionMetadata) -> IRBDocument:
         """Generate informed consent document."""
         risk_level = metadata.risk_level
-        
+
         if risk_level == RiskLevel.MINIMAL:
             risk_description = "This study involves minimal risk, which means the probability and magnitude of harm or discomfort anticipated in the research are not greater than those ordinarily encountered in daily life."
         elif risk_level == RiskLevel.LOW:
@@ -76,7 +86,7 @@ class IRBGenerator:
             risk_description = "This study involves moderate risk, with potential for temporary discomfort or mild adverse effects."
         else:
             risk_description = "This study involves higher risk, with potential for significant discomfort or adverse effects that will be closely monitored."
-        
+
         content = f"""
 # INFORMED CONSENT FORM
 ## {metadata.study_name}
@@ -123,17 +133,15 @@ I have read and understand the information provided above. I voluntarily agree t
 Participant Signature: _________________ Date: _________
 Researcher Signature: _________________ Date: _________
 """
-        
+
         return IRBDocument(
-            document_type="informed_consent",
-            content=content.strip(),
-            version="1.0"
+            document_type="informed_consent", content=content.strip(), version="1.0"
         )
-    
+
     def _generate_risk_assessment(self, metadata: SessionMetadata) -> IRBDocument:
         """Generate risk assessment document."""
         risk_factors = self._get_risk_factors(metadata)
-        
+
         content = f"""
 # RISK ASSESSMENT FORM
 ## {metadata.study_name}
@@ -169,13 +177,11 @@ Based on the above assessment, this study is classified as {metadata.risk_level.
 Date: {datetime.now().strftime('%B %d, %Y')}
 Reviewed by: _________________
 """
-        
+
         return IRBDocument(
-            document_type="risk_assessment",
-            content=content.strip(),
-            version="1.0"
+            document_type="risk_assessment", content=content.strip(), version="1.0"
         )
-    
+
     def _generate_protocol_summary(self, metadata: SessionMetadata) -> IRBDocument:
         """Generate protocol summary document."""
         content = f"""
@@ -224,13 +230,11 @@ This study aims to investigate brain function using {metadata.modality.value} im
 - Principal Investigator: {metadata.principal_investigator}
 - Research team: Trained imaging technicians and research coordinators
 """
-        
+
         return IRBDocument(
-            document_type="protocol_summary",
-            content=content.strip(),
-            version="1.0"
+            document_type="protocol_summary", content=content.strip(), version="1.0"
         )
-    
+
     def _generate_data_management_plan(self, metadata: SessionMetadata) -> IRBDocument:
         """Generate data management plan."""
         content = f"""
@@ -272,14 +276,14 @@ This study aims to investigate brain function using {metadata.modality.value} im
 - **Method**: Secure deletion with verification
 - **Documentation**: Certificate of destruction for audit purposes
 """
-        
+
         return IRBDocument(
-            document_type="data_management",
-            content=content.strip(),
-            version="1.0"
+            document_type="data_management", content=content.strip(), version="1.0"
         )
-    
-    def _generate_adverse_events_protocol(self, metadata: SessionMetadata) -> IRBDocument:
+
+    def _generate_adverse_events_protocol(
+        self, metadata: SessionMetadata
+    ) -> IRBDocument:
         """Generate adverse events protocol."""
         content = f"""
 # ADVERSE EVENTS PROTOCOL
@@ -340,17 +344,17 @@ Adverse events are any untoward medical occurrences in study participants, inclu
 - Annual continuing review
 - Final safety summary report
 """
-        
+
         return IRBDocument(
-            document_type="adverse_events",
-            content=content.strip(),
-            version="1.0"
+            document_type="adverse_events", content=content.strip(), version="1.0"
         )
-    
+
     def _generate_recruitment_materials(self, metadata: SessionMetadata) -> IRBDocument:
         """Generate recruitment materials."""
-        population_desc = self._get_population_description(metadata.participant_population)
-        
+        population_desc = self._get_population_description(
+            metadata.participant_population
+        )
+
         content = f"""
 # RECRUITMENT MATERIALS
 ## {metadata.study_name}
@@ -402,13 +406,11 @@ Best regards,
 ### Exclusion Criteria
 {self._get_exclusion_criteria(metadata)}
 """
-        
+
         return IRBDocument(
-            document_type="recruitment",
-            content=content.strip(),
-            version="1.0"
+            document_type="recruitment", content=content.strip(), version="1.0"
         )
-    
+
     def _get_modality_specific_risks(self, modality: ImagingModality) -> str:
         """Get modality-specific risk descriptions."""
         risks = {
@@ -447,14 +449,17 @@ Best regards,
 - Discomfort from prolonged sitting
 - Metallic object interference
 - Need for quiet environment
-"""
+""",
         }
-        return risks.get(modality, "- Minimal physical risks\n- Discomfort from procedures\n- Rare complications")
-    
+        return risks.get(
+            modality,
+            "- Minimal physical risks\n- Discomfort from procedures\n- Rare complications",
+        )
+
     def _get_risk_factors(self, metadata: SessionMetadata) -> List[str]:
         """Get risk factors for assessment."""
         factors = []
-        
+
         # Population-based risks
         if metadata.participant_population == ParticipantPopulation.CHILDREN:
             factors.append("Vulnerable population - enhanced protections required")
@@ -462,15 +467,15 @@ Best regards,
             factors.append("Age-related health considerations")
         elif metadata.participant_population == ParticipantPopulation.CLINICAL:
             factors.append("Clinical population - potential for exacerbation")
-        
+
         # Modality-based risks
         if metadata.modality == ImagingModality.TMS:
             factors.append("Seizure risk with brain stimulation")
         elif metadata.modality == ImagingModality.FMRI:
             factors.append("Claustrophobia and noise exposure")
-        
+
         return factors
-    
+
     def _get_population_risks(self, population: ParticipantPopulation) -> str:
         """Get population-specific risk descriptions."""
         risks = {
@@ -478,10 +483,10 @@ Best regards,
             ParticipantPopulation.CLINICAL: "Clinical population requires enhanced monitoring for potential symptom exacerbation.",
             ParticipantPopulation.CHILDREN: "Pediatric population requires enhanced protections and parental consent.",
             ParticipantPopulation.ELDERLY: "Elderly population may have age-related health considerations and comorbidities.",
-            ParticipantPopulation.PREGNANT: "Pregnant population requires additional safety considerations for fetal protection."
+            ParticipantPopulation.PREGNANT: "Pregnant population requires additional safety considerations for fetal protection.",
         }
         return risks.get(population, "Standard population risk profile.")
-    
+
     def _get_modality_risks(self, modality: ImagingModality) -> str:
         """Get modality-specific risk assessment."""
         risks = {
@@ -490,41 +495,47 @@ Best regards,
             ImagingModality.TMS: "TMS risks include headache, scalp discomfort, and rare seizure risk.",
             ImagingModality.MRI: "MRI risks include claustrophobia, noise, and metallic object safety.",
             ImagingModality.PET: "PET risks include radiation exposure and IV injection discomfort.",
-            ImagingModality.MEG: "MEG risks are minimal, primarily involving discomfort from prolonged sitting."
+            ImagingModality.MEG: "MEG risks are minimal, primarily involving discomfort from prolonged sitting.",
         }
         return risks.get(modality, "Standard procedural risks.")
-    
+
     def _get_risk_mitigation_strategies(self, metadata: SessionMetadata) -> str:
         """Get risk mitigation strategies."""
         strategies = []
-        
+
         # General strategies
-        strategies.extend([
-            "Comprehensive informed consent process",
-            "Medical screening and eligibility assessment",
-            "Trained research personnel",
-            "Emergency response procedures",
-            "Continuous monitoring during procedures"
-        ])
-        
+        strategies.extend(
+            [
+                "Comprehensive informed consent process",
+                "Medical screening and eligibility assessment",
+                "Trained research personnel",
+                "Emergency response procedures",
+                "Continuous monitoring during procedures",
+            ]
+        )
+
         # Modality-specific strategies
         if metadata.modality == ImagingModality.TMS:
-            strategies.extend([
-                "Seizure risk screening",
-                "Motor threshold determination",
-                "Safety parameter limits",
-                "Emergency medical kit"
-            ])
+            strategies.extend(
+                [
+                    "Seizure risk screening",
+                    "Motor threshold determination",
+                    "Safety parameter limits",
+                    "Emergency medical kit",
+                ]
+            )
         elif metadata.modality in [ImagingModality.FMRI, ImagingModality.MRI]:
-            strategies.extend([
-                "MRI safety screening",
-                "Hearing protection",
-                "Emergency communication",
-                "Claustrophobia assessment"
-            ])
-        
+            strategies.extend(
+                [
+                    "MRI safety screening",
+                    "Hearing protection",
+                    "Emergency communication",
+                    "Claustrophobia assessment",
+                ]
+            )
+
         return "\n".join(f"- {strategy}" for strategy in strategies)
-    
+
     def _get_population_description(self, population: ParticipantPopulation) -> str:
         """Get population description for recruitment."""
         descriptions = {
@@ -532,10 +543,10 @@ Best regards,
             ParticipantPopulation.CLINICAL: "individuals with [specific condition]",
             ParticipantPopulation.CHILDREN: "children aged 8-17",
             ParticipantPopulation.ELDERLY: "adults aged 65 and older",
-            ParticipantPopulation.PREGNANT: "pregnant women in their second or third trimester"
+            ParticipantPopulation.PREGNANT: "pregnant women in their second or third trimester",
         }
         return descriptions.get(population, "adults")
-    
+
     def _get_inclusion_criteria(self, population: ParticipantPopulation) -> str:
         """Get inclusion criteria for recruitment."""
         criteria = {
@@ -543,59 +554,67 @@ Best regards,
             ParticipantPopulation.CLINICAL: "Diagnosed with [condition], stable on medication",
             ParticipantPopulation.CHILDREN: "Ages 8-17, parental consent required",
             ParticipantPopulation.ELDERLY: "Ages 65+, community-dwelling",
-            ParticipantPopulation.PREGNANT: "Pregnant women, 2nd or 3rd trimester"
+            ParticipantPopulation.PREGNANT: "Pregnant women, 2nd or 3rd trimester",
         }
         return criteria.get(population, "Generally healthy adults")
-    
+
     def _get_detailed_inclusion_criteria(self, metadata: SessionMetadata) -> str:
         """Get detailed inclusion criteria."""
         base_criteria = [
             f"Ages appropriate for {metadata.participant_population.value.replace('_', ' ')} population",
             "Able to provide informed consent (or parental consent)",
             "Able to comply with study procedures",
-            "No contraindications for study procedures"
+            "No contraindications for study procedures",
         ]
-        
+
         # Add modality-specific criteria
         if metadata.modality == ImagingModality.TMS:
-            base_criteria.extend([
-                "No history of seizures or epilepsy",
-                "No implanted medical devices",
-                "No current pregnancy"
-            ])
+            base_criteria.extend(
+                [
+                    "No history of seizures or epilepsy",
+                    "No implanted medical devices",
+                    "No current pregnancy",
+                ]
+            )
         elif metadata.modality in [ImagingModality.FMRI, ImagingModality.MRI]:
-            base_criteria.extend([
-                "No MRI contraindications (metal implants, claustrophobia)",
-                "Able to lie still for extended periods"
-            ])
-        
+            base_criteria.extend(
+                [
+                    "No MRI contraindications (metal implants, claustrophobia)",
+                    "Able to lie still for extended periods",
+                ]
+            )
+
         return "\n".join(f"- {criterion}" for criterion in base_criteria)
-    
+
     def _get_exclusion_criteria(self, metadata: SessionMetadata) -> str:
         """Get exclusion criteria."""
         criteria = [
             "Unable to provide informed consent",
             "Contraindications for study procedures",
             "Current substance abuse",
-            "Severe psychiatric symptoms"
+            "Severe psychiatric symptoms",
         ]
-        
+
         # Add modality-specific exclusions
         if metadata.modality == ImagingModality.TMS:
-            criteria.extend([
-                "History of seizures or epilepsy",
-                "Implanted medical devices",
-                "Current pregnancy"
-            ])
+            criteria.extend(
+                [
+                    "History of seizures or epilepsy",
+                    "Implanted medical devices",
+                    "Current pregnancy",
+                ]
+            )
         elif metadata.modality in [ImagingModality.FMRI, ImagingModality.MRI]:
-            criteria.extend([
-                "MRI contraindications (metal implants)",
-                "Severe claustrophobia",
-                "Unable to lie still"
-            ])
-        
+            criteria.extend(
+                [
+                    "MRI contraindications (metal implants)",
+                    "Severe claustrophobia",
+                    "Unable to lie still",
+                ]
+            )
+
         return "\n".join(f"- {criterion}" for criterion in criteria)
-    
+
     def _get_informed_consent_template(self):
         """Get default informed consent template."""
         return """

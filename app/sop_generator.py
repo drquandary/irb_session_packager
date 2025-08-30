@@ -1,72 +1,77 @@
-from typing import List, Dict, Any
-from jinja2 import Environment, FileSystemLoader, Template
 from pathlib import Path
-from .models import SOPDocument, SessionMetadata, ImagingModality, SessionType
+from typing import Any, Dict, List
+
+from jinja2 import Environment, FileSystemLoader, Template
+
+from .models import ImagingModality, SessionMetadata, SessionType, SOPDocument
 
 
 class SOPGenerator:
     """Generates Standard Operating Procedures for imaging sessions."""
-    
+
     def __init__(self, template_dir: Path = None):
         """Initialize SOP generator with template directory."""
         if template_dir is None:
-            template_dir = Path(__file__).resolve().parent / 'templates' / 'sop'
-        
+            template_dir = Path(__file__).resolve().parent / "templates" / "sop"
+
         self.template_dir = template_dir
         self.template_dir.mkdir(parents=True, exist_ok=True)
         self.jinja_env = Environment(
             loader=FileSystemLoader(str(self.template_dir)),
             trim_blocks=True,
-            lstrip_blocks=True
+            lstrip_blocks=True,
         )
-        
+
         # Create default templates if they don't exist
         self._create_default_templates()
-    
+
     def _create_default_templates(self):
         """Create default SOP templates if they don't exist."""
         templates = {
-            'fmri_task_sop.md': self._get_fmri_task_template(),
-            'eeg_resting_state_sop.md': self._get_eeg_resting_template(),
-            'tms_safety_sop.md': self._get_tms_safety_template(),
-            'general_setup_sop.md': self._get_general_setup_template(),
-            'data_collection_sop.md': self._get_data_collection_template(),
-            'quality_control_sop.md': self._get_quality_control_template()
+            "fmri_task_sop.md": self._get_fmri_task_template(),
+            "eeg_resting_state_sop.md": self._get_eeg_resting_template(),
+            "tms_safety_sop.md": self._get_tms_safety_template(),
+            "general_setup_sop.md": self._get_general_setup_template(),
+            "data_collection_sop.md": self._get_data_collection_template(),
+            "quality_control_sop.md": self._get_quality_control_template(),
         }
-        
+
         for filename, content in templates.items():
             template_path = self.template_dir / filename
             if not template_path.exists():
                 template_path.write_text(content)
-    
+
     def generate_sop(self, session_metadata: SessionMetadata) -> SOPDocument:
         """Generate appropriate SOP based on session metadata."""
         modality = session_metadata.modality
         session_type = session_metadata.session_type
-        
+
         if modality == ImagingModality.FMRI and session_type == SessionType.TASK_BASED:
             return self._generate_fmri_task_sop(session_metadata)
-        elif modality == ImagingModality.EEG and session_type == SessionType.RESTING_STATE:
+        elif (
+            modality == ImagingModality.EEG
+            and session_type == SessionType.RESTING_STATE
+        ):
             return self._generate_eeg_resting_sop(session_metadata)
         elif modality == ImagingModality.TMS:
             return self._generate_tms_safety_sop(session_metadata)
         else:
             return self._generate_generic_sop(session_metadata)
-    
+
     def _generate_fmri_task_sop(self, metadata: SessionMetadata) -> SOPDocument:
         """Generate fMRI task-based SOP."""
-        template = self.jinja_env.get_template('fmri_task_sop.md')
-        
+        template = self.jinja_env.get_template("fmri_task_sop.md")
+
         context = {
-            'study_name': metadata.study_name,
-            'session_id': metadata.session_id,
-            'duration': metadata.duration_minutes,
-            'pi_name': metadata.principal_investigator,
-            'population': metadata.participant_population.value
+            "study_name": metadata.study_name,
+            "session_id": metadata.session_id,
+            "duration": metadata.duration_minutes,
+            "pi_name": metadata.principal_investigator,
+            "population": metadata.participant_population.value,
         }
-        
+
         content = template.render(**context)
-        
+
         return SOPDocument(
             title=f"fMRI Task-Based Protocol - {metadata.study_name}",
             purpose="To establish standardized procedures for conducting task-based fMRI sessions",
@@ -77,30 +82,30 @@ class SOPGenerator:
                 "Anatomical scan acquisition",
                 "Task presentation setup and testing",
                 "Functional scan acquisition during task performance",
-                "Post-scan procedures and data backup"
+                "Post-scan procedures and data backup",
             ],
             safety_considerations=[
                 "MRI safety screening mandatory for all participants",
                 "Emergency procedures review with participant",
                 "Continuous monitoring during scan",
-                "Immediate response to participant distress signals"
+                "Immediate response to participant distress signals",
             ],
             equipment_needed=[
                 "3T MRI scanner with head coil",
                 "Task presentation system",
                 "Response collection device",
                 "Emergency squeeze ball",
-                "Ear protection"
+                "Ear protection",
             ],
             quality_control=[
                 "Daily phantom scans",
                 "Visual inspection of anatomical images",
                 "Task timing verification",
                 "Motion parameter review",
-                "Data backup verification"
-            ]
+                "Data backup verification",
+            ],
         )
-    
+
     def _generate_eeg_resting_sop(self, metadata: SessionMetadata) -> SOPDocument:
         """Generate EEG resting-state SOP."""
         return SOPDocument(
@@ -113,29 +118,29 @@ class SOPGenerator:
                 "Resting-state instructions delivery",
                 "5-minute eyes-open resting state",
                 "5-minute eyes-closed resting state",
-                "Data quality check and backup"
+                "Data quality check and backup",
             ],
             safety_considerations=[
                 "Skin preparation with gentle abrasion",
                 "Electrode gel safety check",
                 "Participant comfort monitoring",
-                "Emergency stop procedures"
+                "Emergency stop procedures",
             ],
             equipment_needed=[
                 "64-channel EEG system",
                 "EEG cap with electrodes",
                 "Conductive gel",
                 "Computer with recording software",
-                "Comfortable seating"
+                "Comfortable seating",
             ],
             quality_control=[
                 "Impedance check below 5kΩ",
                 "Visual inspection of raw data",
                 "Artifact detection and marking",
-                "Data backup verification"
-            ]
+                "Data backup verification",
+            ],
         )
-    
+
     def _generate_tms_safety_sop(self, metadata: SessionMetadata) -> SOPDocument:
         """Generate TMS safety SOP."""
         return SOPDocument(
@@ -148,29 +153,29 @@ class SOPGenerator:
                 "Stimulation site localization",
                 "Safety parameter verification",
                 "Stimulation session execution",
-                "Post-session monitoring"
+                "Post-session monitoring",
             ],
             safety_considerations=[
                 "Contraindication screening",
                 "Seizure risk assessment",
                 "Hearing protection mandatory",
-                "Emergency medical kit available"
+                "Emergency medical kit available",
             ],
             equipment_needed=[
                 "TMS stimulator and coil",
                 "Neuronavigation system",
                 "EMG recording equipment",
                 "Hearing protection",
-                "Emergency medical supplies"
+                "Emergency medical supplies",
             ],
             quality_control=[
                 "Equipment calibration verification",
                 "Motor threshold confirmation",
                 "Stimulation site accuracy check",
-                "Adverse event monitoring"
-            ]
+                "Adverse event monitoring",
+            ],
         )
-    
+
     def _generate_generic_sop(self, metadata: SessionMetadata) -> SOPDocument:
         """Generate generic SOP for unspecified modalities."""
         return SOPDocument(
@@ -183,32 +188,32 @@ class SOPGenerator:
                 "Data collection according to protocol",
                 "Quality checks during session",
                 "Post-session procedures",
-                "Data backup and documentation"
+                "Data backup and documentation",
             ],
             safety_considerations=[
                 "General safety briefing",
                 "Emergency contact procedures",
                 "Participant rights review",
-                "Data privacy protection"
+                "Data privacy protection",
             ],
             equipment_needed=[
                 f"{metadata.modality.value} equipment",
                 "Safety equipment",
                 "Data collection tools",
-                "Backup storage"
+                "Backup storage",
             ],
             quality_control=[
                 "Equipment functionality check",
                 "Data quality verification",
                 "Documentation review",
-                "Backup confirmation"
-            ]
+                "Backup confirmation",
+            ],
         )
-    
+
     def get_available_templates(self) -> List[str]:
         """Get list of available SOP templates."""
-        return [f.name for f in self.template_dir.glob('*.md')]
-    
+        return [f.name for f in self.template_dir.glob("*.md")]
+
     def _get_fmri_task_template(self) -> str:
         """Get fMRI task template content."""
         return """# fMRI Task-Based Protocol - {{ study_name }}
@@ -281,7 +286,7 @@ All task-based fMRI sessions conducted as part of {{ study_name }}.
 - Motion parameter review
 - Data backup verification
 """
-    
+
     def _get_eeg_resting_template(self) -> str:
         """Get EEG resting-state template content."""
         return """# EEG Resting-State Protocol - {{ study_name }}
@@ -343,7 +348,7 @@ All resting-state EEG sessions conducted as part of {{ study_name }}.
 - Artifact detection and marking
 - Data backup verification
 """
-    
+
     def _get_tms_safety_template(self) -> str:
         """Get TMS safety template content."""
         return """# TMS Safety Protocol - {{ study_name }}
@@ -417,7 +422,7 @@ All TMS sessions conducted as part of {{ study_name }}.
 - Stimulation site accuracy check
 - Adverse event monitoring
 """
-    
+
     def _get_general_setup_template(self) -> str:
         """Get general setup template content."""
         return """# General Research Setup Protocol
@@ -441,7 +446,7 @@ All research sessions requiring general setup procedures.
 4. Documentation review
 5. Final safety verification
 """
-    
+
     def _get_data_collection_template(self) -> str:
         """Get data collection template content."""
         return """# Data Collection Protocol
@@ -465,7 +470,7 @@ All research data collection activities.
 4. Data backup and verification
 5. Post-collection documentation
 """
-    
+
     def _get_quality_control_template(self) -> str:
         """Get quality control template content."""
         return """# Quality Control Protocol

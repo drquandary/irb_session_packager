@@ -1,13 +1,15 @@
 """Common database utilities for BSC AI Apps."""
 
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-from contextlib import contextmanager
-from .logging_config import get_logger
+
 from .error_handling import ConfigurationError
+from .logging_config import get_logger
 
 logger = get_logger(__name__)
+
 
 class DatabaseConnection:
     """SQLite database connection manager."""
@@ -77,7 +79,10 @@ class DatabaseConnection:
         result = self.execute_query(query, (table_name,))
         return len(result) > 0
 
-def init_database(db_path: Path, schema: Dict[str, Dict[str, str]]) -> DatabaseConnection:
+
+def init_database(
+    db_path: Path, schema: Dict[str, Dict[str, str]]
+) -> DatabaseConnection:
     """Initialize database with given schema."""
     db = DatabaseConnection(db_path)
 
@@ -86,11 +91,13 @@ def init_database(db_path: Path, schema: Dict[str, Dict[str, str]]) -> DatabaseC
 
     return db
 
+
 def get_db_connection(db_path: Optional[Path] = None) -> DatabaseConnection:
     """Get a database connection with default path."""
     if db_path is None:
         db_path = Path("./data/app.db")
     return DatabaseConnection(db_path)
+
 
 # Example schema for common use cases
 DEFAULT_SCHEMAS = {
@@ -99,7 +106,7 @@ DEFAULT_SCHEMAS = {
         "session_id": "TEXT UNIQUE NOT NULL",
         "study_name": "TEXT NOT NULL",
         "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
-        "status": "TEXT DEFAULT 'active'"
+        "status": "TEXT DEFAULT 'active'",
     },
     "files": {
         "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
@@ -107,13 +114,13 @@ DEFAULT_SCHEMAS = {
         "filepath": "TEXT NOT NULL",
         "upload_date": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
         "file_type": "TEXT",
-        "file_size": "INTEGER"
+        "file_size": "INTEGER",
     },
     "results": {
         "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
         "session_id": "TEXT NOT NULL",
         "result_type": "TEXT NOT NULL",
         "result_data": "TEXT NOT NULL",  # JSON string
-        "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-    }
+        "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+    },
 }
