@@ -9,7 +9,7 @@
     "risk_level": "moderate",
     "duration_minutes": 45,
     "expected_participants": 10,
-    "date_created": "2025-08-30 14:43:19.099232"
+    "date_created": "2025-08-30 14:46:17.757156"
   },
   "bids_events": [
     {
@@ -77,44 +77,44 @@
       "document_type": "informed_consent",
       "version": "1.0",
       "content": "# INFORMED CONSENT FORM\n## Test Export Study\n\n### Principal Investigator: Dr. Export\n### Study ID: test_export_001\n### Date: August 30, 2025\n\n---\n\n## PURPOSE OF STUDY\nYou are being asked to participate in a research study. The purpose of this study is to investigate brain function using TMS imaging techniques.\n\n## STUDY PROCEDURES\nIf you agree to participate, you will undergo the following procedures:\n- Duration: Approximately 45 minutes\n- Modality: TMS\n- Session type: Stimulation\n- Participant population: Healthy Adults\n\n## RISKS AND DISCOMFORTS\nThis study involves moderate risk, with potential for temporary discomfort or mild adverse effects.\n\nSpecific risks associated with TMS include:\n\n- Headache or scalp discomfort\n- Rare seizure risk (less than 0.1%)\n- Hearing protection required\n- Muscle twitching during stimulation\n\n\n## BENEFITS\nThere may be no direct benefit to you from participating in this study. However, your participation may contribute to scientific knowledge about brain function and may benefit future patients with neurological or psychiatric conditions.\n\n## CONFIDENTIALITY\nYour identity will be kept confidential. All data will be coded with a study ID number, and your name will not appear in any reports or publications. Data will be stored securely and access will be limited to authorized study personnel.\n\n## VOLUNTARY PARTICIPATION\nYour participation in this study is voluntary. You may choose not to participate or may withdraw from the study at any time without penalty or loss of benefits to which you are otherwise entitled.\n\n## CONTACT INFORMATION\nIf you have questions about this study, please contact:\n- Principal Investigator: Dr. Export\n- IRB Contact: [Institutional Review Board contact information]\n\n## CONSENT\nI have read and understand the information provided above. I voluntarily agree to participate in this study.\n\nParticipant Signature: _________________ Date: _________\nResearcher Signature: _________________ Date: _________",
-      "created_at": "2025-08-30 14:43:19.099277",
+      "created_at": "2025-08-30 14:46:17.757227",
       "approved": false
     },
     {
       "document_type": "risk_assessment",
       "version": "1.0",
       "content": "# RISK ASSESSMENT FORM\n## Test Export Study\n\n### Study Information\n- **Study ID**: test_export_001\n- **Principal Investigator**: Dr. Export\n- **Modality**: TMS\n- **Population**: Healthy Adults\n- **Risk Level**: Moderate\n\n### Risk Assessment Summary\n\n#### Participant Population Risks\nHealthy adult population with standard risk profile.\n\n#### Modality-Specific Risks\nTMS risks include headache, scalp discomfort, and rare seizure risk.\n\n#### Risk Mitigation Strategies\n- Comprehensive informed consent process\n- Medical screening and eligibility assessment\n- Trained research personnel\n- Emergency response procedures\n- Continuous monitoring during procedures\n- Seizure risk screening\n- Motor threshold determination\n- Safety parameter limits\n- Emergency medical kit\n\n#### Risk-Benefit Analysis\nThe potential benefits of this research outweigh the identified risks due to:\n- Comprehensive safety protocols in place\n- Experienced research team\n- Continuous monitoring procedures\n- Immediate response capabilities for adverse events\n\n### IRB Determination\nBased on the above assessment, this study is classified as moderate risk.\n\nDate: August 30, 2025\nReviewed by: _________________",
-      "created_at": "2025-08-30 14:43:19.099294",
+      "created_at": "2025-08-30 14:46:17.757262",
       "approved": false
     },
     {
       "document_type": "protocol_summary",
       "version": "1.0",
       "content": "# PROTOCOL SUMMARY\n## Test Export Study\n\n### Study Overview\nThis study aims to investigate brain function using TMS imaging in healthy adults participants.\n\n### Objectives\n1. Primary: To characterize brain activity patterns during stimulation states\n2. Secondary: To establish normative data for TMS measures\n3. Exploratory: To identify potential biomarkers for future clinical applications\n\n### Study Design\n- **Type**: Observational neuroimaging study\n- **Duration**: Single session, 45 minutes\n- **Participants**: 10 healthy adults participants\n- **Setting**: Research imaging facility\n\n### Procedures\n1. Informed consent process\n2. Safety screening and eligibility confirmation\n3. TMS data acquisition (45 minutes)\n4. Data quality assessment\n5. Participant debriefing\n\n### Data Collection\n- TMS raw data acquisition\n- Demographic and clinical questionnaires\n- Safety monitoring throughout\n\n### Data Analysis\n- Preprocessing and quality control\n- Statistical analysis of brain activity patterns\n- Comparison with existing normative databases\n- Reporting of findings\n\n### Timeline\n- Study duration: 12 months\n- Participant recruitment: 6 months\n- Data collection: 3 months\n- Analysis and reporting: 3 months\n\n### Personnel\n- Principal Investigator: Dr. Export\n- Research team: Trained imaging technicians and research coordinators",
-      "created_at": "2025-08-30 14:43:19.099300",
+      "created_at": "2025-08-30 14:46:17.757273",
       "approved": false
     },
     {
       "document_type": "data_management",
       "version": "1.0",
       "content": "# DATA MANAGEMENT PLAN\n## Test Export Study\n\n### Data Collection\n- **Primary Data**: TMS imaging data\n- **Secondary Data**: Demographics, clinical assessments\n- **Format**: BIDS-compliant neuroimaging format\n- **Quality Control**: Automated and manual QC procedures\n\n### Data Storage\n- **Location**: Secure research server with encrypted storage\n- **Backup**: Multiple redundant backups with off-site storage\n- **Access**: Role-based access control with audit logging\n- **Retention**: Minimum 7 years per institutional policy\n\n### Data Security\n- **Encryption**: AES-256 encryption for data at rest and in transit\n- **Access Control**: Unique user accounts with strong passwords\n- **Audit Trail**: Complete logging of all data access and modifications\n- **Physical Security**: Secure server room with restricted access\n\n### Data Sharing\n- **De-identification**: All data will be de-identified before sharing\n- **Sharing Agreements**: Data Use Agreements for external collaborators\n- **Public Repository**: De-identified data may be shared in public repositories\n- **Timeline**: Data sharing after primary publication\n\n### Privacy Protection\n- **HIPAA Compliance**: Full compliance with HIPAA regulations\n- **De-identification**: Removal of all identifying information\n- **Limited Access**: Access restricted to authorized research personnel\n- **Training**: All personnel complete privacy and security training\n\n### Data Destruction\n- **Timeline**: Data destruction 7 years after study completion\n- **Method**: Secure deletion with verification\n- **Documentation**: Certificate of destruction for audit purposes",
-      "created_at": "2025-08-30 14:43:19.099302",
+      "created_at": "2025-08-30 14:46:17.757278",
       "approved": false
     },
     {
       "document_type": "adverse_events",
       "version": "1.0",
       "content": "# ADVERSE EVENTS PROTOCOL\n## Test Export Study\n\n### Definition of Adverse Events\nAdverse events are any untoward medical occurrences in study participants, including:\n- Physical symptoms or injuries\n- Psychological distress\n- Technical malfunctions causing harm\n- Privacy breaches\n\n### Reporting Requirements\n- **Immediate**: Life-threatening events within 24 hours\n- **Expedited**: Serious adverse events within 72 hours\n- **Routine**: All other adverse events within 7 days\n\n### Contact Information\n- **Principal Investigator**: Dr. Export\n- **IRB Contact**: [Institutional Review Board]\n- **Emergency**: 911 or local emergency services\n\n### Procedures for Adverse Events\n\n#### 1. Immediate Response\n- Ensure participant safety and well-being\n- Provide appropriate medical care\n- Document incident details\n- Notify principal investigator immediately\n\n#### 2. Assessment\n- Evaluate severity and causality\n- Determine relationship to study procedures\n- Assess impact on participant safety\n- Review protocol modifications if needed\n\n#### 3. Reporting\n- Complete adverse event report form\n- Submit to IRB within required timeframes\n- Update consent forms if necessary\n- Implement corrective actions\n\n#### 4. Follow-up\n- Monitor participant until resolution\n- Provide additional care as needed\n- Document outcome and lessons learned\n- Update study procedures if required\n\n### Risk Mitigation\n- Comprehensive safety protocols\n- Trained research personnel\n- Emergency response procedures\n- Regular safety monitoring\n\n### Documentation\n- Adverse event log maintained\n- Regular safety reports to IRB\n- Annual continuing review\n- Final safety summary report",
-      "created_at": "2025-08-30 14:43:19.099304",
+      "created_at": "2025-08-30 14:46:17.757283",
       "approved": false
     },
     {
       "document_type": "recruitment",
       "version": "1.0",
       "content": "# RECRUITMENT MATERIALS\n## Test Export Study\n\n### Recruitment Flyer\n\n#### Study Title: Test Export Study\n\n#### We are looking for:\nhealthy adults aged 18-65\n\n#### What is involved?\n- Single research session lasting 45 minutes\n- TMS brain imaging\n- Questionnaires and assessments\n- Compensation for time and travel\n\n#### Who can participate?\n- Ages 18-65, generally healthy\n- Generally healthy adults\n- No contraindications for TMS\n\n#### Contact Information:\n- Principal Investigator: Dr. Export\n- Email: [study email]\n- Phone: [study phone number]\n\n### Recruitment Email Template\n\nSubject: Participate in Brain Imaging Research Study\n\nDear [Name],\n\nWe are conducting a research study investigating brain function using TMS imaging. We are looking for healthy adults aged 18-65 to participate in a single research session lasting 45 minutes.\n\nIf you are interested in learning more about this study, please contact us at [contact information].\n\nThank you for your consideration.\n\nBest regards,\nDr. Export\n\n### Social Media Recruitment\n\"Researchers at [institution] are looking for healthy adults aged 18-65 to participate in a brain imaging study. Compensation provided. Contact [email] for details.\"\n\n### Inclusion Criteria\n- Ages appropriate for healthy adults population\n- Able to provide informed consent (or parental consent)\n- Able to comply with study procedures\n- No contraindications for study procedures\n- No history of seizures or epilepsy\n- No implanted medical devices\n- No current pregnancy\n\n### Exclusion Criteria\n- Unable to provide informed consent\n- Contraindications for study procedures\n- Current substance abuse\n- Severe psychiatric symptoms\n- History of seizures or epilepsy\n- Implanted medical devices\n- Current pregnancy",
-      "created_at": "2025-08-30 14:43:19.099315",
+      "created_at": "2025-08-30 14:46:17.757317",
       "approved": false
     }
   ],
-  "created_at": "2025-08-30T14:43:19.099329"
+  "created_at": "2025-08-30T14:46:17.757345"
 }
